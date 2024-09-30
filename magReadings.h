@@ -17,7 +17,10 @@ class magReadings {
         vec_t *magData;
 
     public:
-
+    
+        magReadings(vec_t *magData);
         bool initializeMag();
-        vec_t *getMag();
+        vec_t getMag();
 };
+
+#endif

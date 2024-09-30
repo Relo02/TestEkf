@@ -55,7 +55,7 @@ void IMUReadings::initializeImu() {
     }
 }
 
-quat_t *IMUReadings::getQuaternion() {
+quat_t IMUReadings::getQuaternion() {
     Quaternion q;  // [w, x, y, z]         quaternion container
     mpu.dmpGetCurrentFIFOPacket(fifoBuffer);
     unsigned long currentTime = micros();
@@ -67,10 +67,10 @@ quat_t *IMUReadings::getQuaternion() {
     quat->dt = (currentTime >= quat->t) ? (currentTime - quat->t) / 1000.0f : (currentTime + (ULONG_MAX - quat->t + 1)) / 1000.0f;
     quat->t = currentTime;
 
-    return quat;
+    return *quat;
 }
 
-attitude_t *IMUReadings::getAttitude() {
+attitude_t IMUReadings::getAttitude() {
     Quaternion q;         // [w, x, y, z]         quaternion container
     VectorFloat gravity;  // [x, y, z]            gravity vector
     float ypr[3];         // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
@@ -85,7 +85,7 @@ attitude_t *IMUReadings::getAttitude() {
     att->dt = (currentTime >= att->t) ? (currentTime - att->t) / 1000.0f : (currentTime + (ULONG_MAX - att->t + 1)) / 1000.0f;
     att->t = currentTime;
 
-    return att;
+    return *att;
 }
 
 vec_t *IMUReadings::getRawAccel() {
@@ -162,17 +162,17 @@ vec_t *IMUReadings::getWorldAccel() {
     return accel;
 }
 
-vec_t *IMUReadings::getAcceleration() {
+vec_t IMUReadings::getAcceleration() {
 
     vec_t *accelleration = getRealAccel();
-    return accelleration;
+    return *accelleration;
     
 }
 
-vec_t *IMUReadings::getGyro() {
+vec_t IMUReadings::getGyro() {
 
     vec_t *angular_vel = getRawGyro();
-    return angular_vel;
+    return *angular_vel;
 
 }
 

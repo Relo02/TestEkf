@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
 #include "QuadEstimatorEKF.h"
-#include "baro.h"
-#include "gps.h"
-#include "imu.h"
-#include "mag.h"
+#include "baroReadings.h"
+#include "gpsReadings.h"
+#include "imuReadings.h"
+#include "magReadings.h"
 #include "motor.h"
 #include "pinDef.h"
 #include "radio.h"
@@ -71,7 +71,9 @@ magReadings magReadings(&mag);
 baroReadings baroReadings(&bar);
 
 // initialization of the imu constructor for the imu readings
-IMUReadings IMUReadings(&gyro, &quat, &att, &accel);
+IMUReadings IMUReadings(&gyro, &quat, &att, &accIMUFrame);
+
+utils utils;
 
 
 void setup()
@@ -95,10 +97,10 @@ void setup()
         else
             Serial.println("Initialization not started, waiting for 's' command");
     }
-    initializeImu();
-    validGPS = initializeGPS();
-    validMag = initializeMag();
-    validBaro = initializeBarometer();
+    IMUReadings.initializeImu();
+    validGPS = gpsReadings.initializeGPS();
+    validMag = magReadings.initializeMag();
+    validBaro = baroReadings.initializeBarometer();
     // initializeMotors();
     // initializeRadio();
 
@@ -139,25 +141,25 @@ void loop()
     // Getting values from imu
     if (micros() - accIMUFrame.t >= 5000)
     { // 200Hz
-        accIMUFrame = getAcceleration();
+        accIMUFrame = IMUReadings.getAcceleration();
         if (DEBUG_ACC || DEBUG_ALL)
         {
             Serial.print("Acc:\t");
-            printData(&accIMUFrame); 
+            utils.printData(&accIMUFrame); 
         }
     }
 
     if (micros() - gyro.t >= 5000)
     { // 200Hz
-        gyro = getGyro();
+        gyro = IMUReadings.getGyro();
         if (DEBUG_GYRO || DEBUG_ALL)
         {
             Serial.print("Gyro:\t");
-            printData(&gyro);
+            utils.printData(&gyro);
         }
     }
 
-    if (validGPS && getGPS())
+    if (validGPS && gpsReadings.getGPS(&coordGPS, &speedGPS))
     {
         /*posGPS.x = r * coordGPS.lat - posGPS0.x;             // north
         posGPS.y = r * coordGPS.lon * cos(lat0) - posGPS0.y; // east
@@ -174,19 +176,19 @@ void loop()
         if (DEBUG_GPS || DEBUG_ALL)
         {
             Serial.print("GPS_Pos:\t");
-            printData(&posGPS);
+            utils.printData(&posGPS);
             /*Serial.print("GPS_LAT:\t");
             Serial.print(coordGPS.lat, 6);
             Serial.print("\tGPS_LON:\t");
             Serial.println(coordGPS.lon, 6);*/
             Serial.print("GPS_Speed:\t");
-            printData(&speedGPS);
+            utils.printData(&speedGPS);
         }
     }
 
     if (validMag && micros() - mag.t > 5000)
     { // 200Hz
-        mag = getMag();
+        mag = magReadings.getMag();
 
         yawMag = estimation.yawFromMag(mag, quat);
         estimation.updateFromMag(yawMag, mag.dt / 1000.0f);
@@ -194,20 +196,20 @@ void loop()
         if (DEBUG_MAG || DEBUG_ALL)
         {
             Serial.print("Mag:\t");
-            printData(&mag);
+            utils.printData(&mag);
         }
     }
 
     if (validBaro && micros() - bar.t > 5000)
     {  // 200Hz
-        bar = getBarometer();
+        bar = baroReadings.getBarometer();
 
         estimation.updateFromBar(bar.altitude, bar.dt / 1000.0f);
 
         if (DEBUG_BAR || DEBUG_ALL)
         {
             Serial.print("Bar:\t");
-            printData(&bar);
+            utils.printData(&bar);
         }
     }
 
@@ -216,8 +218,8 @@ void loop()
     accBodyFrame = R * Vector3f(accIMUFrame.x, accIMUFrame.y, accIMUFrame.z); // acceleration in drone frame
     // // EKF estimation for attitude, speed and position
     // // estimation.kf_attitudeEstimation(accBodyFrame, Vector3f(gyro.x, gyro.y, gyro.z), accIMUFrame.dt);  // quaternion attitude estimation
-    quat = getQuaternion();
-    att = getAttitude();
+    quat = IMUReadings.getQuaternion();
+    att = IMUReadings.getAttitude();
     estimation.xt_at << quat.w, quat.x, quat.y, quat.z; // just copy quaternion from dmp
     estimation.estAttitude = estimation.EPEuler321(estimation.xt_at);
     estimation.predict(accBodyFrame, Vector3f(gyro.x, gyro.y, gyro.z), accIMUFrame.dt / 1000.0f); // prediction of the (x, y, z) position and velocity
@@ -226,7 +228,7 @@ void loop()
     if (DEBUG_QUAT || DEBUG_ALL)
     {
         Serial.print("EKF_Quat:\t");
-        printData(&quat);
+        utils.printData(&quat);
     }
     if (DEBUG_MAGYAW || DEBUG_ALL)
     {
@@ -236,20 +238,20 @@ void loop()
     if (DEBUG_YPR || DEBUG_ALL)
     {
         Serial.print("EKF_YPR:\t");
-        printData(&att);
+        utils.printData(&att);
     }
     if (DEBUG_POS || DEBUG_ALL)
     {
         Serial.print("EKF_Pos:\t");
-        printData(&pos);
+        utils.printData(&pos);
     }
     if (DEBUG_VEL || DEBUG_ALL)
     {
         Serial.print("EKF_Speed:\t");
-        printData(&speed);
+        utils.printData(&speed);
     }
 
-    feedGPS();
+    gpsReadings.feedGPS();
     loopRate(2000);
 }
 
@@ -269,7 +271,7 @@ void loopRate(int freq)
     // Sit in loop until appropriate time has passed
     while (invFreq > (checker - currentTime))
     {
-        feedGPS();
+        gpsReadings.feedGPS();
         checker = micros();
     }
 }

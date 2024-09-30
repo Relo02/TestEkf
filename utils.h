@@ -7,8 +7,6 @@
 
 class utils {
 
-    
-
     public:
         void setupBlink(int numBlinks, int upTime, int downTime);
 

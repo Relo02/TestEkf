@@ -166,7 +166,7 @@ void controller::controlANGLE2(unsigned long throttleCmd /*channel_1_pwm */, att
     PIDil->iPrev.yaw = PIDil->i.yaw;
 }
 
-void controller::controlRATE(unsigned long throttleCmd /*channel_1_pwm */, attitude_t desiredAtt, vec_t gyro, attitude_t attIMU, PID_t *PID) {
+void controller::controlRATE(unsigned long throttleCmd /*channel_1_pwm */, attitude_t desiredAtt, vec_t gyro, vec_t *prevGyFro, attitude_t attIMU, PID_t *PID) {
     // DESCRIPTION: Computes control commands based on state error (rate)
     /*
      * See explanation for controlANGLE(). Everything is the same here except the error is now the desired rate - raw gyro reading.

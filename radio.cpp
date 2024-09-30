@@ -1,5 +1,15 @@
 #include "radio.h"
 
+#if defined USE_SBUS_RX
+SBUS sbus(Serial6);
+uint16_t sbusChannels[16];
+bool sbusFailSafe;
+bool sbusLostFrame;
+#endif
+#if defined USE_DSM_RX
+DSM1024 DSM;
+#endif
+
 void radio::initializeRadio() {
     // PPM Receiver
 #if defined USE_PPM_RX
@@ -70,6 +80,7 @@ void radio::serialEvent3(void) {
 #endif
 }
 
+#ifdef USE_PPM_RX
 void radio::getPPM() {
     unsigned long dt_ppm;
     int trig = digitalRead(PPM_Pin);
@@ -108,7 +119,9 @@ void radio::getPPM() {
         ppm_counter = ppm_counter + 1;
     }
 }
+#endif
 
+#ifdef USE_PPM_RX
 void radio::getCh1() {
     int trigger = digitalRead(ch1Pin);
     if (trigger == 1) {
@@ -162,6 +175,7 @@ void radio::getCh6() {
         channel_6_raw = micros() - rising_edge_start_6;
     }
 }
+#endif
 
 void radio::failSafe(unsigned long radioIn[]) {
     // DESCRIPTION: If radio gives garbage values, set all commands to default values

@@ -1,9 +1,22 @@
 #include "GPSReadings.h"
 
+// The TinyGPSPlus object
+TinyGPSPlus gps;
+
 GPSReadings::GPSReadings(gps_t *coord, vec_t *speed) {
     this->coord = coord;
     this->gpsCoord = coord;
     this->speed = speed;
+}
+
+void GPSReadings::smartDelay(unsigned long ms)
+{
+    unsigned long start = millis();
+    do
+    {
+        while (gpsPort.available())
+            gps.encode(gpsPort.read());
+    } while (millis() - start < ms);
 }
 
 bool GPSReadings::initializeGPS() {
@@ -64,6 +77,7 @@ bool GPSReadings::initializeGPS() {
 
         while (k < numSamples || var.lat > MAX_VAR_DEG_LAT || var.lon > MAX_VAR_DEG_LONG /*|| var.alt > MAX_VAR_ALT*/)
         {
+
             while (!getGPS(&gpsData[k % numSamples], NULL))
             {
                 feedGPS();
@@ -114,7 +128,7 @@ bool GPSReadings::isGPSUpdated() {
     return gps.location.isUpdated() || gps.speed.isUpdated() || gps.course.isUpdated();
 }
         
-bool GPSReadings::getGPS() {
+bool GPSReadings::getGPS(gps_t *gpsCoord, vec_t *speed) {
     bool update_location = gps.location.isUpdated();
 
     if (update_location)

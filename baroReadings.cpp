@@ -1,7 +1,21 @@
 #include "baroReadings.h"
 
+// Default : forced mode, standby time = 1000 ms
+// Oversampling = pressure ×1, temperature ×1, humidity ×1, filter off, spi off
+BME280I2C::Settings settings(
+    BME280::OSR_X1,
+    BME280::OSR_X1,
+    BME280::OSR_X1,
+    BME280::Mode_Forced,
+    BME280::StandbyTime_1000ms,
+    BME280::Filter_16,
+    BME280::SpiEnable_False,
+    BME280I2C::I2CAddr_0x76);
+
+BME280I2C bme(settings);
+
 baroReadings::baroReadings(bar_t *bar) {
-    this->bar = bar;
+    this->data = bar;
 }
         
 bool baroReadings::initializeBarometer() {
@@ -33,7 +47,7 @@ bool baroReadings::initializeBarometer() {
     
     while (k < numSamples || var > MAX_VAR_BARO )
     {
-        getBarometer(&bar[k%numSamples]);
+        bar[k%numSamples] = getBarometer();
 
         double dt = micros() - prev;
         Serial.printf("%d, %0.12f: %0.12f\n", k, dt, bar[k%numSamples].altitude);
@@ -66,8 +80,7 @@ bool baroReadings::initializeBarometer() {
     return true;
 }
 
-bar_t *baroReadings::getBarometer() {
-    bar_t *data;
+bar_t baroReadings::getBarometer() {
     float temp(NAN), hum(NAN), pres(NAN);
     unsigned long currentTime = micros();
 
@@ -86,5 +99,5 @@ bar_t *baroReadings::getBarometer() {
     data->dt = (currentTime >= data->t) ? (currentTime - data->t) / 1000.0f : (currentTime + (ULONG_MAX - data->t + 1)) / 1000.0f;
     data->t = currentTime;
 
-    return data;
+    return *data;
 }

@@ -11,3 +11,5 @@ class motor {
         void driveMotors(float thrust[4]);
         void throttleCut(unsigned long cutOffCmd, float pwm[], bool *armedFly);
 };
+
+#endif

@@ -37,3 +37,5 @@ class controller {
         void controlANGLE2(unsigned long throttleCmd /*channel_1_pwm */, attitude_t desiredAtt, vec_t gyro, attitude_t attIMU, attitude_t *attIMUprev, PID_t *PIDol, PID_t *PIDil);
         void controlRATE(unsigned long throttleCmd /*channel_1_pwm */, attitude_t desiredAtt, vec_t gyro, vec_t *prevGyFro, attitude_t attIMU, PID_t *PID);
 };
+
+#endif

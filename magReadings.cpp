@@ -12,7 +12,7 @@ bool magReadings::initializeMag() {
     return true;
 }
 
-vec_t *magReadings::getMag() {
+vec_t magReadings::getMag() {
     sensors_event_t event;
     unsigned long currentTime = micros();
     magSensor.getEvent(&event);
@@ -22,6 +22,6 @@ vec_t *magReadings::getMag() {
     magData->dt = (currentTime >= magData->t) ? (currentTime - magData->t) / 1000.0f : (currentTime + (ULONG_MAX - magData->t + 1)) / 1000.0f;
     magData->t = currentTime;
 
-    return magData;
+    return *magData;
 }
 

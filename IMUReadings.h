@@ -20,8 +20,6 @@ class IMUReadings {
         uint16_t packetSize;     // expected DMP packet size (default is 42 bytes)
         uint16_t fifoCount;      // count of all bytes currently in FIFO
         uint8_t fifoBuffer[64];  // FIFO storage buffer
-        vec_t accIMUFrame;
-        Vector3f accBodyFrame;
         vec_t *gyro;
         quat_t *quat;
         attitude_t *att;
@@ -29,13 +27,16 @@ class IMUReadings {
 
     public:
 
+        IMUReadings(vec_t *gyro, quat_t *quat, attitude_t *att, vec_t *accel);
         void initializeImu();
-        quat_t *getQuaternion();
-        attitude_t *getAttitude();
+        quat_t getQuaternion();
+        attitude_t getAttitude();
         vec_t *getRawAccel();
         vec_t *getRawGyro();
         vec_t *getRealAccel();
         vec_t *getWorldAccel();
-        vec_t *getAcceleration();
-        vec_t *getGyro();
+        vec_t getAcceleration();
+        vec_t getGyro();
 };
+
+#endif

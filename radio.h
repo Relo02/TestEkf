@@ -24,35 +24,26 @@ class radio {
         int ppm_counter = 0;
         unsigned long time_ms = 0;
 
-        #if defined USE_SBUS_RX
-        SBUS sbus(Serial6);
-        uint16_t sbusChannels[16];
-        bool sbusFailSafe;
-        bool sbusLostFrame;
-        #endif
-        #if defined USE_DSM_RX
-        DSM1024 DSM;
-        #endif
-
     public:
-        void initializeRadio();
-        void getCommands(unsigned long radioIn[], unsigned long radioInPrev[]);
-        unsigned long getRadioPWM(int ch_num);
-        void serialEvent3(void);
-        void failSafe(unsigned long radioIn[]);
 
-        #ifdef USE_PPM_RX
-        void getPPM();
-        #endif
+      void initializeRadio();
+      void getCommands(unsigned long radioIn[], unsigned long radioInPrev[]);
+      unsigned long getRadioPWM(int ch_num);
+      void serialEvent3(void);
+      void failSafe(unsigned long radioIn[]);
 
-        #ifdef USE_PPM_RX
-        void getCh1();
-        void getCh2();
-        void getCh3();
-        void getCh4();
-        void getCh5();
-        void getCh6();
-        #endif
+      #ifdef USE_PPM_RX
+      void getPPM();
+      #endif
+
+      #ifdef USE_PPM_RX
+      void getCh1();
+      void getCh2();
+      void getCh3();
+      void getCh4();
+      void getCh5();
+      void getCh6();
+      #endif
 
 };
 
