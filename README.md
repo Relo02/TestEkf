@@ -1,2 +1,2 @@
-# Updated_version
-The following repository is an updated version of Falco drone sensor fusion repository
+# FALCO Sensor-Fusion
+Sensor fusion developement and testing code, and EKF is used to merge data from 6-axis IMU, magnetometer, barometer and GPS
